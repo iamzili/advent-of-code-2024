@@ -15,13 +15,9 @@ func check(e error) {
 	}
 }
 
-func main() {
-	var re = regexp.MustCompile(`mul\([0-9]{1,3},[0-9]{1,3}\)`)
-	dat, err := os.ReadFile("input")
-	check(err)
+func part1(data []byte, re regexp.Regexp) {
 	var allInst int
-
-	matches := re.FindAllString(string(dat), -1)
+	matches := re.FindAllString(string(data), -1)
 
 	for _, e := range matches {
 		f := func(c rune) bool {
@@ -33,4 +29,12 @@ func main() {
 		allInst += x * y
 	}
 	fmt.Println("Sum of all uncorrupted mul instructions is ", allInst)
+}
+
+func main() {
+	dat, err := os.ReadFile("input")
+	check(err)
+
+	var re = regexp.MustCompile(`mul\([0-9]{1,3},[0-9]{1,3}\)`)
+	part1(dat, *re)
 }
