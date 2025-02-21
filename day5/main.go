@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"reflect"
 	"regexp"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -57,6 +59,7 @@ func main() {
 			}
 		}
 	}
+	fmt.Println(alternativeAns(pageOrderingRules, updatesToCheck))
 
 	for _, update := range updatesToCheck {
 		if isOrdered(update, pageOrderingRules) {
@@ -127,4 +130,36 @@ func fixOneStep(update, containsMapping []int, index int) []int {
 		}
 	}
 	return update
+}
+
+func customLess(ruleMap map[int][]int, update []int, i, j int) bool {
+	if _, ok := ruleMap[update[i]]; ok {
+		for _, char := range ruleMap[update[i]] {
+			if char == update[j] {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// alternative solution using a custom Less function
+func alternativeAns(rulesMap map[int][]int, updates [][]int) (int, int) {
+	sum, fixedSum := 0, 0
+	for _, update := range updates {
+
+		sortedUpdate := make([]int, len(update))
+		copy(sortedUpdate, update)
+
+		sort.Slice(sortedUpdate, func(i, j int) bool {
+			return customLess(rulesMap, sortedUpdate, i, j)
+		})
+
+		if reflect.DeepEqual(update, sortedUpdate) {
+			sum += update[len(update)/2]
+		} else {
+			fixedSum += sortedUpdate[len(update)/2]
+		}
+	}
+	return sum, fixedSum
 }
