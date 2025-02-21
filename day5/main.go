@@ -21,11 +21,10 @@ import (
 // e.g updatesToCheck[0] returns:
 // [75 47 61 53 29]
 
-// the logic is the following for part1:
+// the logic is the following for isOrdered func:
 // 1. pageOrderingRules[29] = [13] should not be in [75 47 61 53]
 // 2. pageOrderingRules[53] = [29 13] should not be in [75 47 61]
 // 3. etc ..
-// 4. if len(updatesToCheck[0] == 0 we're good
 
 func main() {
 	f, _ := os.Open("input")
@@ -34,6 +33,7 @@ func main() {
 
 	pageOrderingRules := make(map[int][]int)
 	updatesToCheck := [][]int{}
+	var part1, part2 int
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
@@ -48,48 +48,83 @@ func main() {
 
 				pageOrderingRules[key] = append(pageOrderingRules[key], val)
 			} else {
-				u := []int{}
+				update := []int{}
 				for _, substring := range strings.Split(line, ",") {
-					e, _ := strconv.Atoi(substring)
-					u = append(u, e)
+					pageNum, _ := strconv.Atoi(substring)
+					update = append(update, pageNum)
 				}
-				updatesToCheck = append(updatesToCheck, u)
+				updatesToCheck = append(updatesToCheck, update)
 			}
 		}
 	}
-	fmt.Println("The sum of the middle page numbers is: ", part1(updatesToCheck, pageOrderingRules))
+
+	for _, update := range updatesToCheck {
+		if isOrdered(update, pageOrderingRules) {
+			part1 += returnMiddle(update)
+		} else {
+			update = fixOrder(update, pageOrderingRules)
+			part2 += returnMiddle(update)
+		}
+	}
+
+	fmt.Println("The sum of the middle page numbers for ordered updates is: ", part1)
+	fmt.Println("The sum of the middle page numbers after correctly ordering is: ", part2)
 }
 
 // check if all elements from "subSlice" are present in "slice"
-func check(subSlice, slice []int) bool {
-	for _, e := range subSlice {
-		if slices.Contains(slice, e) {
-			return false
+func check(rule, subSlice []int) (bool, []int) {
+	containsMapping := make([]int, len(subSlice))
+	var isPresent bool
+	for i, e := range subSlice {
+		if slices.Contains(rule, e) {
+			containsMapping[i] = 1
+			isPresent = true
+		} else {
+			containsMapping[i] = 0
 		}
 	}
-	return true
+	return isPresent, containsMapping
 }
 
 func returnMiddle(slice []int) int {
 	return slice[len(slice)/2]
 }
 
-func part1(updatesToCheck [][]int, pageOrderingRules map[int][]int) int {
-	var middlePageNumbers int
-	for _, update := range updatesToCheck {
-		for i := len(update) - 1; i >= 0; i-- {
-			subSlice := update[:i]
-			if len(subSlice) == 0 {
-				// we finished checking all pages in the update; the order is okay
-				middlePageNumbers += returnMiddle(update)
-			} else {
-				if value, ok := pageOrderingRules[update[i]]; ok {
-					if !check(value, subSlice) {
-						break
-					}
-				}
+func isOrdered(update []int, pageOrderingRules map[int][]int) bool {
+	for i := len(update) - 1; i >= 0; i-- {
+		subSlice := update[:i]
+		if rule, ok := pageOrderingRules[update[i]]; ok {
+			// incorrectly-ordered
+			if ok, _ := check(rule, subSlice); ok {
+				return false
 			}
 		}
 	}
-	return middlePageNumbers
+	return true
+}
+
+func fixOrder(update []int, pageOrderingRules map[int][]int) []int {
+	for i := len(update) - 1; i >= 0; i-- {
+		subSlice := update[:i]
+		if rule, ok := pageOrderingRules[update[i]]; ok {
+			// incorrectly-ordered
+			if ok, containsMapping := check(rule, subSlice); ok {
+				fixOrder(fixOneStep(update, containsMapping, i), pageOrderingRules)
+			}
+		}
+	}
+	return update
+}
+
+func fixOneStep(update, containsMapping []int, index int) []int {
+	for i, e := range containsMapping {
+		if e == 1 {
+			val := update[index]
+			// move a value
+			update = slices.Delete(update, index, index+1)
+			update = slices.Insert(update, i, val)
+			break
+		}
+	}
+	return update
 }
