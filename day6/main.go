@@ -11,66 +11,68 @@ const obstacle, guard, eol byte = 35, 94, 10
 func main() {
 	input, _ := os.ReadFile("input")
 	size := slices.Index(input, eol)
-	currGuardPos := slices.Index(input, guard)
+	currPos := slices.Index(input, guard)
+	//startPos := currPos
 	currDirection := "up"
-	visited := []int{currGuardPos} // add the initial position
+	// add the initial position
+	visited := map[int]int{
+		currPos: 1,
+	}
 	move := true
 
 	for move {
 		switch {
 		case currDirection == "up":
-			currGuardPos -= size + 1
-			if !indexExists(input, currGuardPos) { // We found the way out
+			currPos -= size + 1
+			if !indexExists(input, currPos) { // We found the way out
 				move = false
 				break
 			}
-			if isObstacle(input, currGuardPos) { // start moving right
+			if isObstacle(input, currPos) { // start moving right
 				currDirection = "right"
-				currGuardPos += size + 1 // Go back to the previous position
+				currPos += size + 1 // Go back to the previous position
 			} else {
-				visited = append(visited, currGuardPos)
+				visited[currPos] += 1
 			}
 		case currDirection == "down":
-			currGuardPos += size + 1
-			if !indexExists(input, currGuardPos) {
+			currPos += size + 1
+			if !indexExists(input, currPos) {
 				fmt.Println("We found the way out!")
 				move = false
 				break
 			}
-			if isObstacle(input, currGuardPos) { // start moving left
+			if isObstacle(input, currPos) { // start moving left
 				currDirection = "left"
-				currGuardPos -= size + 1 //Go back to the previous position
+				currPos -= size + 1 //Go back to the previous position
 			} else {
-				visited = append(visited, currGuardPos)
+				visited[currPos] += 1
 			}
 		case currDirection == "right":
-			currGuardPos += 1
-			if isObstacle(input, currGuardPos) { // start moving down
+			currPos += 1
+			if isObstacle(input, currPos) { // start moving down
 				currDirection = "down"
-				currGuardPos -= 1 // Go back to the previous position
-			} else if input[currGuardPos] == eol { // We found the way out
+				currPos -= 1 // Go back to the previous position
+			} else if input[currPos] == eol { // We found the way out
 				move = false
 				break
 			} else {
-				visited = append(visited, currGuardPos)
+				visited[currPos] += 1
 			}
 		case currDirection == "left":
-			currGuardPos -= 1
+			currPos -= 1
 			// We found the way out
-			if !indexExists(input, currGuardPos) || input[currGuardPos] == eol {
+			if !indexExists(input, currPos) || input[currPos] == eol {
 				move = false
 				break
 			}
-			if isObstacle(input, currGuardPos) { // start moving up
+			if isObstacle(input, currPos) { // start moving up
 				currDirection = "up"
-				currGuardPos += 1 //Go back to the previous position
+				currPos += 1 //Go back to the previous position
 			} else {
-				visited = append(visited, currGuardPos)
+				visited[currPos] += 1
 			}
 		}
 	}
-	slices.Sort(visited)
-	visited = slices.Compact(visited) // remove duplicated postions
 	fmt.Println("distinct positions visited by the guard is ", len(visited))
 }
 
