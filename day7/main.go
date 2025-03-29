@@ -9,9 +9,22 @@ import (
 	"gonum.org/v1/gonum/stat/combin"
 )
 
-func calcLine(testvalue int, numbers []string) int {
+func calcDay1(testvalue int, numbers []string) int {
 
 	symbols := []string{"+", "-"}
+	equations := calcCartesianProduct(len(numbers)-1, symbols)
+
+	for _, equation := range equations {
+		if calcEquation(testvalue, equation, numbers) {
+			return testvalue
+		}
+	}
+	return 0
+}
+
+func calcDay2(testvalue int, numbers []string) int {
+
+	symbols := []string{"+", "-", "||"}
 	equations := calcCartesianProduct(len(numbers)-1, symbols)
 
 	for _, equation := range equations {
@@ -46,6 +59,8 @@ func calcEquation(testvalue int, equation []int, numbers []string) bool {
 			result += num
 		} else if equation[i] == 1 {
 			result *= num
+		} else if equation[i] == 2 {
+			result, _ = strconv.Atoi(strconv.Itoa(result) + s)
 		}
 	}
 	if testvalue == result {
@@ -58,14 +73,16 @@ func calcEquation(testvalue int, equation []int, numbers []string) bool {
 func main() {
 	input, _ := os.ReadFile("input2")
 	//fmt.Println(string(input))
-	var totalCalResult int
+	var day1, day2 int
 
 	lines := strings.Split(string(input), "\n")
 	for _, s := range lines {
 		v := strings.Split(s, ":")
 		x, _ := strconv.Atoi(v[0])
-		totalCalResult += calcLine(x, strings.Fields(v[1]))
+		day1 += calcDay1(x, strings.Fields(v[1]))
+		day2 += calcDay2(x, strings.Fields(v[1]))
 	}
 
-	fmt.Println("Day1: ", totalCalResult)
+	fmt.Println("Day1: ", day1)
+	fmt.Println("Day2: ", day2)
 }
