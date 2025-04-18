@@ -24,7 +24,7 @@ func main() {
 
 	for freq := range antennas {
 		if len(antennas[freq]) >= 2 { // antinode occurs at any point that is perfectly in line with two antennas of the same frequency
-			// by using the two for loops we get all the possible subsets containing exactly 2 elements
+			// By using the two for loops, we obtain all possible subsets (k-subsets) containing exactly 2 elements from the antennas[freq] set
 			for i, a := range antennas[freq] {
 				for _, b := range antennas[freq][i+1:] {
 					// To calculate the coordinates of the upper antinode for a pair of antennas, use the following formula:
