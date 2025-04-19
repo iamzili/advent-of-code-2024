@@ -28,13 +28,13 @@ func main() {
 			// By using the two for loops, we obtain all possible subsets (k-subsets) containing exactly 2 elements from the antennas[freq] set
 			for i, a := range antennas[freq] {
 				for _, b := range antennas[freq][i+1:] {
-					calcUpperAntidote(a, b, false, grid, part1)  // part1
-					calcBottomAntidote(a, b, false, grid, part1) // part1
+					calcUpperAntinode(a, b, false, grid, part1)  // part1
+					calcBottomAntinode(a, b, false, grid, part1) // part1
 					// antinodes appear on every antenna in part2
 					part2[a] = true
 					part2[b] = true
-					calcUpperAntidote(a, b, true, grid, part2)  // part2
-					calcBottomAntidote(a, b, true, grid, part2) // part2
+					calcUpperAntinode(a, b, true, grid, part2)  // part2
+					calcBottomAntinode(a, b, true, grid, part2) // part2
 
 				}
 			}
@@ -46,28 +46,28 @@ func main() {
 
 // To calculate the coordinates of the upper antinode for a pair of antennas, use the following formula:
 // (firstAntenna - secondAntenna) + firstAntenna
-func calcUpperAntidote(a, b image.Point, p2 bool, grid map[image.Point]rune, antidotes map[image.Point]bool) {
-	upperAntidote := a.Sub(b).Add(a)
-	if grid[upperAntidote] != 0 {
-		antidotes[upperAntidote] = true
+func calcUpperAntinode(a, b image.Point, p2 bool, grid map[image.Point]rune, antinodes map[image.Point]bool) {
+	upperAntinode := a.Sub(b).Add(a)
+	if grid[upperAntinode] != 0 {
+		antinodes[upperAntinode] = true
 	} else {
 		p2 = false
 	}
 	if p2 {
-		calcUpperAntidote(upperAntidote, a, true, grid, antidotes)
+		calcUpperAntinode(upperAntinode, a, true, grid, antinodes)
 	}
 }
 
 // To calculate the coordinates of the bottom antinode for a pair of antennas, use the following formula:
 // (secondAntenna - firstAntenna) + secondAntenna
-func calcBottomAntidote(a, b image.Point, p2 bool, grid map[image.Point]rune, antidotes map[image.Point]bool) {
-	bottomAntidote := b.Sub(a).Add(b)
-	if grid[bottomAntidote] != 0 {
-		antidotes[bottomAntidote] = true
+func calcBottomAntinode(a, b image.Point, p2 bool, grid map[image.Point]rune, antinodes map[image.Point]bool) {
+	bottomAntinode := b.Sub(a).Add(b)
+	if grid[bottomAntinode] != 0 {
+		antinodes[bottomAntinode] = true
 	} else {
 		p2 = false
 	}
 	if p2 {
-		calcBottomAntidote(b, bottomAntidote, true, grid, antidotes)
+		calcBottomAntinode(b, bottomAntinode, true, grid, antinodes)
 	}
 }
