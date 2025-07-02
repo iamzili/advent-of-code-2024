@@ -38,8 +38,8 @@ func main() {
 		currPos := tr
 		for { // check one starting point
 			for _, d := range delta { // check every direction at currPos to find a candidate
-				if n := currPos.Add(d); int(grid[n])-'0' == ((int(grid[currPos]) - '0') + 1) {
-					if int(grid[n])-'0' == 9 {
+				if n := currPos.Add(d); grid[n] == grid[currPos]+1 {
+					if grid[n] == '9' {
 						trailheads[tr][n] += 1
 					}
 					candidates = append(candidates, n)
