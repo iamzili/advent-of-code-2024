@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"os"
-	"slices"
 	"strings"
 )
 
@@ -21,11 +20,11 @@ func main() {
 	//			etc ...
 
 	grid := map[image.Point]rune{}
-	trailheads := make(map[image.Point]map[image.Point]bool)
+	trailheads := make(map[image.Point]map[image.Point]int)
 	for y, s := range strings.Fields(string(input)) {
 		for x, r := range s {
 			if r == '0' {
-				trailheads[image.Point{x, y}] = make(map[image.Point]bool)
+				trailheads[image.Point{x, y}] = make(map[image.Point]int)
 			}
 			grid[image.Point{x, y}] = r
 		}
@@ -33,7 +32,7 @@ func main() {
 
 	delta := []image.Point{{0, -1}, {1, 0}, {0, 1}, {-1, 0}}
 	candidates := []image.Point{}
-	score := 0
+	score, rating := 0, 0
 
 	for tr := range trailheads {
 		currPos := tr
@@ -41,10 +40,9 @@ func main() {
 			for _, d := range delta { // check every direction at currPos to find a candidate
 				if n := currPos.Add(d); int(grid[n])-'0' == ((int(grid[currPos]) - '0') + 1) {
 					if int(grid[n])-'0' == 9 {
-						trailheads[tr][n] = true
-					} else if !slices.Contains(candidates, n) {
-						candidates = append(candidates, n)
+						trailheads[tr][n] += 1
 					}
+					candidates = append(candidates, n)
 				}
 			}
 			if candidates == nil {
@@ -61,7 +59,10 @@ func main() {
 	}
 	for _, val := range trailheads {
 		score += len(val)
+		for _, v := range val {
+			rating += v
+		}
 	}
 	fmt.Println("part1: ", score)
-
+	fmt.Println("part2: ", rating)
 }
