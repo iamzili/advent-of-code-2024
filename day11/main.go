@@ -1,41 +1,82 @@
 package main
 
 import (
+	"encoding/json"
+	"flag"
 	"fmt"
+	"log"
 	"os"
+	"runtime/pprof"
 	"strconv"
 	"strings"
 )
 
-var blinks = 25
+var cache = make(map[int][]int)
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
-	input, _ := os.ReadFile("input2")
-	stones := strings.Split(string(input), " ")
-	currBlinks := 0
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 
-	fmt.Println("part1: ", part1(stones, currBlinks))
+	stones := []int{}
+	input, _ := os.ReadFile("input2")
+	// Convert string to slice of ints
+	json.Unmarshal([]byte("["+strings.ReplaceAll(string(input), " ", ",")+"]"), &stones)
+
+	fmt.Println("part1: ", getCountAfterBlinking(stones, 25))
+	fmt.Println("part2: ", getCountAfterBlinking(stones, 75))
+
 }
 
-func part1(stones []string, currBlinks int) int {
-	tmpStones := []string{}
-	if currBlinks != blinks {
-		currBlinks++
-		for _, s := range stones {
-			if s == "0" {
-				tmpStones = append(tmpStones, "1")
-			} else if len(s)%2 == 0 {
-				stone := strings.SplitAfter(s, s[:len(s)/2])
-				s1, _ := strconv.Atoi(stone[0])
-				s2, _ := strconv.Atoi(stone[1])
-				tmpStones = append(tmpStones, strconv.Itoa(s1), strconv.Itoa(s2))
-			} else {
-				i, _ := strconv.Atoi(s)
-				i *= 2024
-				tmpStones = append(tmpStones, strconv.Itoa(i))
-			}
-		}
-		return part1(tmpStones, currBlinks)
+func getCountAfterBlinking(stones []int, blinkCount int) int {
+	count := 0
+	for _, stone := range stones {
+		count += getCountAfterXBlinking(stone, cache, blinkCount)
 	}
-	return len(stones)
+	return count
+}
+
+func getCountAfterXBlinking(stone int, cache map[int][]int, blinkCount int) int {
+	if _, ok := cache[stone]; ok {
+		if cache[stone][blinkCount-1] != 0 {
+			return cache[stone][blinkCount-1]
+		}
+	} else {
+		cache[stone] = make([]int, 75)
+	}
+
+	if blinkCount == 1 {
+		cache[stone][blinkCount-1] = len(changeStone(stone))
+		return len(changeStone(stone))
+	}
+
+	sum := 0
+	for _, stone := range changeStone(stone) {
+		sum += getCountAfterXBlinking(stone, cache, blinkCount-1)
+	}
+
+	cache[stone][blinkCount-1] = sum
+	return sum
+}
+
+func changeStone(stone int) []int {
+	tmpStones := []int{}
+	if stone == 0 {
+		tmpStones = append(tmpStones, 1)
+	} else if len(strconv.Itoa(stone))%2 == 0 {
+		stoneString := strconv.Itoa(stone)
+		i1, _ := strconv.Atoi(stoneString[:len(stoneString)/2])
+		i2, _ := strconv.Atoi(stoneString[len(stoneString)/2:])
+		tmpStones = append(tmpStones, i1, i2)
+	} else {
+		tmpStones = append(tmpStones, stone*2024)
+	}
+	return tmpStones
 }
